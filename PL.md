@@ -347,3 +347,89 @@
             - 프로그램 어휘들을 정규 문법으로 표현하고 유한 상태 기계로 인식함
         2. 구문 분석 (syntatic analysis, parsing)
             - 프로그램 구조를 문맥자유 문법으로 표현하고 푸쉬다운 오토마타로 인식함
+
+## 변수의 속성
+
+- von Neumann 구조
+    - 명령형 언어는 폰노이만 구조의 컴퓨터를 구현한 형태이다.
+        - 폰 노이만 구조 : 명령형언어
+        - 메모리 : 변수
+        - 프로세서 : 수식 연산
+
+- 변수의 속성
+    1. 이름 (name)
+        - 무명 변수 (Anonymous Variable)
+            - 이름이 주어지지 않는 변수도 있을 수 있다.
+            ```
+            int *p = (int *) malloc(sizeof(int));
+            // 동적할당된 무명변수를 *p로 접근할 수 있다.
+            ```
+    2. 타입 (type)
+        - 타입으로부터 알 수 있는 정보
+            - 값의 범위 (range of values)
+            - 적용 가능한 연산의 종류 (set of operations)
+            - 유효숫자의 범위 (precision): 실수형의 경우
+            - 16-bit 정수형으로 알 수 있는 정보:
+                1. 값의 범위: -32768 ~ 32767
+                2. 연산의 종류: +, -, *, /, mod, ...
+            - Stack class로부터 알 수 있는 정보:
+                1. 값의 범위: class 내에 member 데이터로 선언된 변수의 타입에 따라 좌우된다.
+                2. 연산의 종류: class 내에 member 함수로 선언된 pop, push, ...
+    3. 주소 (address)
+        - 프로그램에서 사용되는 변수는 타입 크기만큼의 기억장소가 대응된다.
+        - 변수에 대응된 기억장치의 주소를 변수의 주소라고 한다.
+        - 한 변수의 주소는 실행 시점에 따라 다를 수 있다.
+        - 동일한 이름의 변수는 프로그램에서 사용된 위치에 따라 주소가 다를 수 있다.
+        ```
+        int x;              // 전역변수
+        foo() { int x; }    // foo의 지역변수
+        goo() { int x; }    // goo의 지역분수
+        ```
+        - 하나의 기억장소에 여러개의 변수 이름이 대응될 수 있다. (alias 현상)
+            - 가동성 저하
+    4. 값 (value)
+        - 변수에 대응되어 있는 기억장소에 저장되어 있는 값
+        - 변수의 값의 종류:
+            1. 변수의 l-value: 변수의 주소 (address)
+            2. 변수의 r-value: 변수의 값 (value)
+            ```
+            int k;
+            k = 3; // k: l-value
+            k = k + 5; // 왼쪽 k는 l-value 오른쪽 k는 r-value
+            ```
+        - 인자전달 (parameter passing)
+            1. Call-by-value (값-전달): r-value를 전달
+            2. Call-by-reference (참조-전달): l-value를 전달
+    5. 영역 (scope)
+    6. 존속기간 (lifetime)
+- Alias (별칭)
+    - 여러개의 이름으로 변수에 접근할 수 있는 것을 alias라 한다.
+    - Alias 현상이 발생하는 경우
+        - Pointer 사용
+            ```
+            int *p, *q;
+            p = q = (int *)malloc(...);
+            ```
+        - 참조변수 (Reference variable) 사용
+            ```
+            int ans;
+            int &ref_ans = ans;
+            ```
+        - union 사용
+            ```
+            union {
+                int p;
+                float q;
+            } a;
+            ```
+        - Call-by-Reference에 의한 인자 전달
+            ```
+            void foo(int &x, ...) { ... }
+            main() {
+                int a;
+                foo(a, ...);
+                ...
+            }
+            ```
+- 바인딩 (Binding)
+    - 변수에 속성을 부여하는 것을 바인딩이라고 한다.
