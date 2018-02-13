@@ -604,3 +604,160 @@
         2. 동적 바인딩에 의한 이름상수
     - 장점
         1. 가독성 및 신뢰성 향상
+
+## 변수의 타입검사
+
+- 타입 검사 (Type Checking)
+    - 연산자(operator)와 피연산자(operand)로 이루어진 수식(expression)에 대해 타입을 검사하고 오류를 검출하는 것
+    - 타입검사 방법
+        - 연산자의 피연산자들이 서로 호환가능 타입(compatible type)인지 확인.
+        - 연산자의 피연산자들이 호환가능 타입이 아닐 때 타입오류 발생.
+    - 수식에 적용되는 개념을 함수와 배정문(assignment statement)까지 일반화할 수 있다.
+- 타입바인딩에 따른 타입검사
+    1. 모든 타입바인딩이 정적(static)인 경우
+        - 거의 모든 타입검사가 정적
+        - 장점
+            - 타입오류를 일찍 검출
+            - 실행 시간이 빠름
+        - 단점
+            - 유연성 부족
+            - 타입이 한번 결정되면 바뀌지 않음.
+    2. 모든 타입바인딩이 동적(dynamic)인 경우
+        - 모든 타입검사는 반드시 동적
+        - 장점
+            - 유연성 향상 (필요한대로 타입 변경 가능)
+        - 단점
+            - 타입오류를 늦게 검출
+            - 타입오류 해결 비용 증가
+            - 타입바인딩 및 타입검사가 실행시 이루어지므로 실행 시간이 증가
+- 강 타입 (Strong Typing)
+    - 프로그래밍 언어 설계 시 가장 중요한 개념 중의 하나.
+    - 강 타입 언어 (STrong Typing)
+        - 타입 과 관련된 오류를 항상 검출할 수 있는 언어
+        - 조건: 모든 타입이 컴파일할 때나 실행할 때 결정될 수 있어야 한다.
+    - 강 타입 언어가 되지 못하는 원인
+        1. Coercion 지원 (묵시적 타입 변환)
+            - 프로그래머의 의도와 달리 타입이 변환될 수 있음.
+            - C/C++는 coercion을 너무 많이 허용함. ㅈ망언어
+        2. 타입검사를 지원하지 않는 기억장소 공유 (alias의 하나)
+            - C/C++의 union, C#의 StructLayout
+        3. 부프로그램 호출 시 전달되는 인자의 타입검사를 안하는 경우
+            - C에서 `int foo(fa) int fa; { ... }`
+        4. 가변 record
+        5. 프로그래머가 타입검사 중단을 명시할 수 있는 기능
+            - Ada의 Unchecked_Conversion
+            - C#의 dynamic 키워드
+- 타입호환성 (Type Compatibility)
+    - 피연산자의 타입이 호환가능 타입(compatible type)인 경우
+        - 피연산자의 타입이 연산자에 적법
+        - 피연산자의 타입이 coercion에 의해서 연산자에 적법한 타입으로 변환될 수 있음.
+    - 강 타입 언어 (STrong Typed Language)
+        - 이름 타입호환성 (name type compatibility)
+            - 이름 타입호환성을 적용할 경우, 두 변수가 호환가능 타입이 되는 경우
+                - 두 변수가 동일한 선언문에서 선언된 경우
+                - 두 변수의 타입 이름이 동일한 경우
+                ```
+                type Atype = array [1..12] of real;
+                var a1, a2: array [1..12] of real;
+                    b: array [1..12] of real;
+                    c: Atype;
+                    d: Atype;ㅏ
+                    호환가능 타입: (a1, a2), (c, d)
+                ```
+                - 구현하기는 쉬우나 사용 면에서 상당히 제한적이다.
+                    - Ada: 정수의 부분범위(subrange) 타입은 정수형과 호환적이지 않다.
+                    ```
+                    type Indextype 0..100;
+                    index: Indextype; count: Integer;
+                    ```
+                    - Pascal: 형식인자와 실인자는 타입 이름이 동일해야 한다.
+                    ```
+                    program main; // Error
+                        var x: array [1..12] of real;
+                        function foo(y:array[1..12] of real, ...) :real;
+                    begin ... foo(x, ...); ... end.
+                    ```
+        - 구조 타입호환성 (struct type compatibility)
+            - 구조 타입호환성을 적용할 경우, 두 변수가 호환가능 타입이 되는 경우
+                - 각 변수의 타입 구조가 서로 동일한 구조일 경우
+                - 구현하기는 어려우나, 사용 면에서 유연하다.
+            - 문제점
+                - 두 개의 구조체가 구조는 동일하나, field 이름이 다를 경우
+                ```c
+                struct foo { int a; float b; }
+                struct goo { int x; float y; }
+                ```
+                - 두 개의 열거형이 원소 개수는 같으나, 원소 이름이 다를 경우
+                ```c
+                enum foo { mon, tue, wed };
+                enum goo { jan, feb, mar };
+                ```
+                - 두 개의 배열이 크기는 같으나, 첨자의 범위가 다를 경우
+                ```pascal
+                var a: array [0..11] of integer;
+                    b: array [1..12] of integer;
+                ```
+                - 하나의 타입 이름으로 두 개의 새로운 타입을 정의했을 경우
+                ```pascal
+                type celcius = real;
+                     fahrenheit = real;
+                ```
+                - 이상이 구조는 같지만 단위(unit)나 척도(scale)가 다를 수 있다.
+    - 강 타입 언어가 되지 못하는 원인
+        - 기본(primitive) 데이터타입의 경우 이름과 구조가 동일하기에 호환성 검사에 문제가 발생하지 않음.
+        - 사용자 정의 데이터타입의 경우 이름 타입호환성이나 구조 타입호환성 하나만을 엄격하게 준수하는 언어는 없음.
+    - Ada의 타입호환성
+        - 일반적으로 이름 타입호환성 사용
+            1. 파생타입 (derived type)
+                - 기존 타입과 호환가능하지 않음
+                ```ada
+                type celsius    is new Float;
+                type fahrenheit is new Float;
+                - celsius, fahrenheit, Float는 서로 호환가능하지 않음
+                ```
+            2. 부분타입 (subtype)
+                - 부모타입(parent type)과 호환가능
+                ```ada
+                subtype Small_type is Integer range 0..99;
+                - Small_type은 Integer와 호환 가능.
+                ```
+            3. 제한 무명 타입 (constrained anonymous type)
+                - 변수는 모두 독립적
+                ```ada
+                A, B : array (1..10) of Integer;
+                type List_10 is array (1..10) of Integer;
+                C, D : LIST_10;
+                - 호환가능: (C, D)
+                ```
+            4. 비제한 배열 타입 (unconstrained array type)
+                - 구조 타입 호환성이 적용
+                ```ada
+                type Vector is array (Integer range <>) of Integer;
+                Vector_1: Vector (1..10);
+                Vector_2: Vector (11..20);
+                - Vector_1과 Vector_2는 호환가능하다
+                ```
+            5. 산술연산자의 피연산자에 대한 coercion은 없음
+                ```ada
+                3.14 * 29 // Error
+                ```
+    - C의 타입호환성
+        - struct, union, enum 타입은 이름 타입호환성을 적용
+            - 모든 각각의 선언은 새로운 타입을 생성하는 것으로 간주.
+            ```c
+            struct { int n; float x; } a1, a2;
+            struct { int n; float x; } b1, b2;
+            - 호환가능: (a1, a2), (b1, b2)
+            ```
+        - 배열은 구조 타입호환성을 적용
+            ```c
+            int A1[7]; int A2[10]; int A3[];
+            - A1, A2, A3가 모두 호환 가능
+            ```
+        - typedef로 정의된 타입은 부모 타입과 동일
+            - typedef로 정의된 타입은 새로운 타입을 생성하는 것이 아님
+            ```c
+            typedef struct { int n; float x; } Stype;
+            Stype a; Stype b;
+            struct { int n; float x; } c;
+            - 호환가능: (a, b)
